@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+
+    <title>Watch Vides</title>
+  </head>
+
+  <body style="background-color: #dee1e4">
+    <div class="container" id="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 class="text-center">Watch Videos</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 text-center p-2 bg-secondary text-white">
+          Slides Video
+        </div>
+        <div class="col-md-4 text-center p-2 bg-secondary text-white">
+          WebCam Video
+        </div>
+        <div class="col-md-4 text-center p-2 bg-secondary text-white">
+          Watch Both
+        </div>
+      </div>
+    </div>
+    <script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+    <script>
+      function getParameterByName(name, url = window.location.href) {
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return "";
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+      //get the video id from the url
+      let userid = getParameterByName("userid").replace(/-/g, "");
+      let presentationid = getParameterByName("presentationid").replace(
+        /-/g,
+        ""
+      );
+
+      let token =
+        "6c67116081747586e65b00b3eaf239fb8fa0068de08f5afb0aa9d93fb757d5b0";
+      //"de331d14f20f419fe35af4b365499a9e3e52aa5ef9d044908cf0d89dfadeb124";
+
+      let project_id = "91szic8h95"; //"m63tx4fqry";
+
+      var requestOptions = {
+        method: "GET",
+        redirect: "follow",
+      };
+
+      let play = false;
+      let create = false;
+      let video1;
+      let video2;
+      let screenVid;
+      let webcamVid;
+      let viddiv = document.getElementById("vid");
+
+      function load(hashed_id1, hashed_id2, i) {
+        document.getElementById(`vid${i}`).innerHTML = `<div
+                     class="wistia_embed wistia_async_${hashed_id1}"
+                     style="width: 640px; height: 360px"
+                   ></div>
+      	<div
+                     class="wistia_embed wistia_async_${hashed_id2}"
+                     style="width: 640px; height: 360px"
+                   ></div>
+      	`;
+        create = true;
+      }
+
+      function play2() {
+        video1.play();
+        video2.play();
+      }
+
+      function pause() {
+        video1.pause();
+        video2.pause();
+      }
+
+      function remove(id) {
+        document.getElementById(`vid${id}`).innerHTML = null;
+        create = false;
+      }
+
+      fetch(
+        `https://api.wistia.com/v1/medias.json?access_token=${token}&project_id=${project_id}`,
+        requestOptions
+      )
+        .then((response) => response.json())
+        .then((result) => {
+          result = result.filter(
+            (item) =>
+              item.name.includes(userid) && item.name.includes(presentationid)
+          );
+          console.log(result); //"j9iszuso5l"
+
+          window._wq = window._wq || [];
+
+          let table = document.getElementById("container");
+
+          if (result.length === 0) {
+            table.innerHTML = "<h1 class='mt-5'>No Videos Found</h1>";
+            return;
+          }
+
+          for (let i = 0; i < result.length; i += 2) {
+            _wq.push({
+              id: result[i].hashed_id,
+              onReady: function (video) {
+                video1 = video;
+                //console.log("I got a handle to the video!", video);
+              },
+            });
+
+            _wq.push({
+              id: result[i + 1].hashed_id,
+              onReady: function (video) {
+                video2 = video;
+                //console.log("I got a handle to the video!", video);
+              },
+            });
+            let nameslides = result[i].name.includes("slides")
+              ? result[i].name
+              : result[i + 1].name;
+            let urlslides = result[i].name.includes("slides")
+              ? result[i].assets[0].url
+              : result[i + 1].assets[0].url;
+
+            let namewebcam = result[i].name.includes("webcam")
+              ? result[i].name
+              : result[i + 1].name;
+            let urlwebcam = result[i].name.includes("webcam")
+              ? result[i].assets[0].url
+              : result[i + 1].assets[0].url;
+
+            let hashed_idslides = result[i].name.includes("slides")
+              ? result[i].hashed_id
+              : result[i + 1].hashed_id;
+
+            let hashed_idwebcam = result[i].name.includes("webcam")
+              ? result[i].hashed_id
+              : result[i + 1].hashed_id;
+            let trow = `
+         <div class="row">
+         	<div class="col-md-4 p-3 text-center mb-2 overflow-hidden">
+         		<a href=${urlslides} style="width: 30px !important" target="_blank">
+         			${nameslides}
+         		</a>
+         		</div>
+         		<div class="col-md-4 text-center mt-3 mb-2 overflow-hidden">
+         		<a href=${urlwebcam} style="width: 30px !important" target="_blank">
+         			${namewebcam}
+         		</a>
+         		</div>
+
+         		<div class="col-md-4 p-2">
+         			<div style='display: flex; justify-content: center; align-items: center;'>
+         			<button class="btn btn-primary mr-2" id="load" onclick="load('${hashed_idslides}', '${hashed_idwebcam}', '${i}')">Load</button>
+               <button class="btn btn-primary mr-2" onclick="play2()">Play</button>
+         			<button class="btn btn-primary mr-2" onclick="pause()">Pause</button>
+         			<button class="btn btn-danger" onclick="remove('${i}')">Remove</button>
+         				</div>
+         			</div>
+         	</div>
+         `;
+
+            let row2 = `
+          <div id='vid${i}' style="display: flex !important; width: 100%;"></div>
+          `;
+
+            table.innerHTML += trow;
+            table.innerHTML += row2;
+          }
+        })
+        .catch((error) => console.log("error", error));
+    </script>
+  </body>
+</html>
